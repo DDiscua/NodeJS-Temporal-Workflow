@@ -73,3 +73,11 @@ http://localhost:6000/sign-message/abc11122abc
 
 
 The Workflow should return the signed message
+
+![image](https://github.com/DDiscua/NodeJS-Temporal-Workflow/assets/31171755/ceb958d9-94cc-4fa9-a634-a7785d144467)
+
+![image](https://github.com/DDiscua/NodeJS-Temporal-Workflow/assets/31171755/5cf38518-c2f5-4cdb-adcf-224b4ab9505b)
+
+![image](https://github.com/DDiscua/NodeJS-Temporal-Workflow/assets/31171755/64267688-5dcc-4c2b-85a5-367d7e7546f8)
+
+![image](https://github.com/DDiscua/NodeJS-Temporal-Workflow/assets/31171755/3f4c5ef5-efc9-4802-8ec4-a991f010d24d)
