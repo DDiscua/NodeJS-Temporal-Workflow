@@ -1,5 +1,9 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
 import * as activities from './activities/activities';
+import * as dotenv from 'dotenv';
+import { connectDb } from './database';
+
+dotenv.config();
 
 const temporalConnectionUrl = process.env.TEMPORAL_CONNECTION_URL || 'localhost:7233';
 
@@ -8,6 +12,7 @@ async function run() {
   //
   // Worker code uses `@temporalio/worker.NativeConnection`.
   // (But in your application code it's `@temporalio/client.Connection`.)
+  await connectDb();
   const connection = await NativeConnection.connect({
     address: temporalConnectionUrl,
     // TLS and gRPC metadata configuration goes here.

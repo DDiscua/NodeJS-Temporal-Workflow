@@ -13,7 +13,7 @@ import {
   REFERENCE_ID_DUPLICATE,
   REFERENCE_ID_NOT_FOUND,
 } from '../constants';
-import { isVerifyIdUnique } from '../utils/helpers';
+import { getSignedMessage, getSignedMessages } from '../database/operations';
 
 const signMessage: Router = express.Router();
 
@@ -32,7 +32,8 @@ signMessage.post('/sign-message', async (req: Request, res: Response) => {
         .send({ status: 'error', error: `Field 'referenceId' ${FIELD_REQUIRED}` });
     }
 
-    if (!isVerifyIdUnique(referenceId)) {
+    const duplicatedId = await isDuplicatedId(referenceId);
+    if (duplicatedId) {
       return res.status(StatusCodes.BAD_REQUEST).send({ status: 'error', error: REFERENCE_ID_DUPLICATE });
     }
 
@@ -60,10 +61,8 @@ signMessage.get('/sign-message/:referenceId', async (req: Request, res: Response
       res.status(StatusCodes.BAD_REQUEST).send({ status: 'error', error: 'ReferedId is required' });
     }
     const client = ClientConnector.getInstance();
-    const workflowExecutionInfo = await client.getWorklfowInfo(referenceId);
+    const workflowExecutionInfo = await client.getWorkflowInfo(referenceId);
     const isWorkflowComplete = shouldGetMessage(workflowExecutionInfo.status.name);
-
-
 
     if (!workflowExecutionInfo) {
       LOGGER.error('[signMessage][error]', { metadata: { error: REFERENCE_ID_NOT_FOUND } });
@@ -88,8 +87,7 @@ signMessage.get('/sign-message/:referenceId', async (req: Request, res: Response
 
 signMessage.get('/sign-messages', async (req: Request, res: Response) => {
   try {
-    const secretManager = SecretAndStorageManager.getInstance();
-    const secretMessages = secretManager.getSignedMessages();
+    const secretMessages = await getSignedMessages();
     return res.status(StatusCodes.OK).send({
       message: secretMessages,
     });
@@ -101,6 +99,11 @@ signMessage.get('/sign-messages', async (req: Request, res: Response) => {
 
 const shouldGetMessage = (status: string) => {
   return status === 'COMPLETED';
+};
+
+const isDuplicatedId = async (referenceId: string): Promise<boolean> => {
+  const referenceIdExists = await getSignedMessage(referenceId);
+  return referenceIdExists?._id ? true : false;
 };
 
 export { signMessage };
