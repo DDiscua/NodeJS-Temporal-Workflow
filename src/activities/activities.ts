@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import SecretManager from '../utils/SecretAndStorageManager';
+import { addSignedMessage } from '../database/operations';
 
 export async function signMessage(message: string, referenceId: string): Promise<string> {
   const secretManager = SecretManager.getInstance();
@@ -9,6 +10,6 @@ export async function signMessage(message: string, referenceId: string): Promise
   const signedMessage = signer.sign(secretManager.getPrivateKey(), 'base64');
 
   // Store the signed message in memory
-  secretManager.addSignedMessage(referenceId, signedMessage);
+  addSignedMessage(referenceId, signedMessage);
   return signedMessage;
 }

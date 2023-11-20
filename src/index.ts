@@ -7,8 +7,11 @@ import { generateSigningKey, getErrorMessage } from './utils';
 import { signMessage } from './services';
 import { StatusCodes } from 'http-status-codes';
 import SecretAndStorageManager from './utils/SecretAndStorageManager';
+import * as dotenv from 'dotenv';
 import ClientConnector from './client';
+import { connectDb } from './database';
 
+dotenv.config();
 const port = process.env.APP_PORT || 6000;
 
 SecretAndStorageManager.getInstance();
@@ -36,7 +39,9 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 try {
-  app.listen(port, (): void => {
+  app.listen(port, async (): Promise<void> => {
+    //Connect to MongoDB
+    await connectDb();
     LOGGER.info(`[appStart][Connected succesfully on port: ${port}]`, { metadata: '', sendLog: true });
   });
 } catch (err) {

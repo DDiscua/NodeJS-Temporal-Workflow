@@ -6,7 +6,7 @@ const { signMessage } = proxyActivities<typeof activities>({
 });
 
 export async function signMessageWorkflow(message: string, referenceId: string): Promise<string> {
-  await sleep('20 seconds'); // Simulating async operation
+  await sleep('12 seconds'); // Simulating async operation
   const signedMessage = await signMessage(message, referenceId);
   return signedMessage;
 }

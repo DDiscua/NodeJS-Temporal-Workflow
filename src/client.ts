@@ -43,7 +43,7 @@ class ClientConnector {
     });
   }
 
-  public async getWorklfowInfo(referenceId: string) {
+  public async getWorkflowInfo(referenceId: string) {
     try {
       const workflowInfo = this.client.getHandle(referenceId).describe();
       return workflowInfo;
