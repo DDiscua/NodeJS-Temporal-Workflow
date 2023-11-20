@@ -50,7 +50,11 @@ class SecretAndStorageManager {
   }
 
   public getSignedMessages() {
-    return this.signedMessages;
+    let messages: { referenceId: string; signedMessage: string; }[] = [];
+    this.signedMessages.forEach((value, key) => {
+      messages.push({ referenceId: key, signedMessage: value });
+    });
+    return messages;
   }
 }
 

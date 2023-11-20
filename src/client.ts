@@ -1,6 +1,5 @@
 import { Connection, Client, WorkflowClient, WorkflowFailedError } from '@temporalio/client';
 import { signMessageWorkflow } from './workflows';
-import { nanoid } from 'nanoid';
 import { ClientPayload } from './interfaces';
 import { wait } from './utils/helpers';
 import { LOGGER } from './logger';
@@ -24,7 +23,6 @@ class ClientConnector {
   }
 
   async setConnection() {
-    console.log('Setting connection', temporalConnectionUrl);
     const connection = await Connection.connect({ address: temporalConnectionUrl });
     this.client = new WorkflowClient({
       connection,
@@ -32,13 +30,12 @@ class ClientConnector {
   }
 
   public async start({ message, referenceId }: ClientPayload) {
-    // Start the signing workflow
     if (!this.client) {
       await this.setConnection();
       await wait(5000);
     }
-    console.log('Starting workflow');
-    const handle = await this.client.start(signMessageWorkflow, {
+
+    await this.client.start(signMessageWorkflow, {
       taskQueue: 'temporal',
       args: [message, referenceId],
       workflowId: referenceId,
@@ -47,9 +44,7 @@ class ClientConnector {
   }
 
   public async getWorklfowInfo(referenceId: string) {
-    // Get the workflow info
     try {
-      //    const result = await handle.result();
       const workflowInfo = this.client.getHandle(referenceId).describe();
       return workflowInfo;
     } catch (err) {
@@ -64,7 +59,7 @@ class ClientConnector {
   }
 
   public async getWorklfowMessageResult(referenceId: string) {
-    // Get the workflow info
+
     try {
       const workflowResult = this.client.getHandle(referenceId).result();
       return workflowResult;
