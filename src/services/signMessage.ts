@@ -43,7 +43,7 @@ signMessage.post('/sign-message', async (req: Request, res: Response) => {
     });
 
     return res.status(StatusCodes.OK).send({
-      message: MESSAGE_SIGNED,
+      message: MESSAGE_SIGNED_IN_PROGRESS,
       referenceId,
     });
   } catch (err) {
@@ -82,11 +82,11 @@ signMessage.get('/sign-message/:referenceId', async (req: Request, res: Response
     });
   } catch (err) {
     LOGGER.error('[signMessage][error]', { metadata: { error: getErrorMessage(err) } });
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ status: 'error', error: getErrorMessage(err) });
+    res.status(StatusCodes.NOT_FOUND).send({ status: 'error', error: REFERENCE_ID_NOT_FOUND });
   }
 });
 
-signMessage.get('/sign-message/list', async (req: Request, res: Response) => {
+signMessage.get('/sign-messages', async (req: Request, res: Response) => {
   try {
     const secretManager = SecretAndStorageManager.getInstance();
     const secretMessages = secretManager.getSignedMessages();

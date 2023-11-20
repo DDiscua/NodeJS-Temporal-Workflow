@@ -1,18 +1,75 @@
-# Hello World
+# Temporal API using NodeJS
 
-This is the default project that is scaffolded out when you run `npx @temporalio/create@latest ./myfolder`.
-
-The [Hello World Tutorial](https://learn.temporal.io/getting_started/typescript/hello_world_in_typescript/) walks through the code in this sample.
+This is the default project was bootstrapped using hellow world example from Temporal.io
 
 ### Running this sample
 
-1. `temporal server start-dev` to start [Temporal Server](https://github.com/temporalio/cli/#installation).
-1. `npm install` to install dependencies.
-1. `npm run start.watch` to start the Worker.
-1. In another shell, `npm run workflow` to run the Workflow Client.
+** WARNING **
 
-The Workflow should return:
+.env file is commited in this repository for testing porpuse, never commit and push sensitive data.
 
-```bash
-Hello, Temporal!
+#### Requirements:
+
+1. Have docker and docker compose installed
+2. Have nodejs v18 installed.
+
+#### Steps Docker: 
+
+1. Clone the repository
+2. Go to folder cd NodeJS-Temporal-Workflow
+3. Run the command docker compose up, this will install and configure temporal cluster.
+
+**Note:** 
+ If you want to debug or continue developing, run docker compose with the file *docker-compose-dev.yaml* then run the api and worker.
+ 
+- API:  ``` npm run dev ``` 
+- Worker: ``` npm run start```
+- Env: uncomment the line : #TEMPORAL_CONNECTION_URL=localhost:7233
+
+#### Test:
+
+1. You can import postman collection and postman enviroment from postman folder.
+
+
+#### Sample Test:
+
+http://localhost:6000/sign-message
+
+**Request:**
+
 ```
+{
+    "message": "This is a test message",
+    "referenceId": "abc11122abc"
+}
+
+```
+
+**Response:**
+
+```
+{
+    "message": "Message signing in progress",
+    "referenceId": "abc11122abc"
+}
+
+```
+
+http://localhost:6000/sign-message/abc11122abc
+
+
+
+**Response:**
+
+```
+{
+    "message": "Message signed successfully",
+    "workflowStatus": "COMPLETED",
+    "referenceId": "abc11122abc",
+    "signedMessage": "X9FIzz4NaoGLeXcTwmoPi01GwSD+JxJPnwtY/YXkBLYzffN55zx1JIm9OWnyXbopruVc5P5HaXfrB2SfCdq06BN8suIvn7ajaMXqz6/9PO67w1J+ahPZ1sgJPvGyyc+X6mrMluK0HdTcwwkBSZAqi4ZCTxEwtCJ2oSK7onrGKNxJEjXToIXzbcmRyuNODVReF0eMku5yc8y9podPZ6buMP2XQhYnPmeOwQDqO38zEv96ff5R1MWDJKt42riuN3HsWQKZQ6JA34LelLQRuJ7OeExpMRz6aNILQ/14nTVkXCfLZ8Qw5m866+T3ktFveCKGrieTPPeVg6Us7Cj9n6ls1Q=="
+}
+```
+
+
+
+The Workflow should return the signed message
