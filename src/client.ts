@@ -1,35 +1,83 @@
-import { Connection, Client } from '@temporalio/client';
-import { example } from './workflows';
+import { Connection, Client, WorkflowClient, WorkflowFailedError } from '@temporalio/client';
+import { signMessageWorkflow } from './workflows';
 import { nanoid } from 'nanoid';
+import { ClientPayload } from './interfaces';
+import { wait } from './utils/helpers';
+import { LOGGER } from './logger';
+import { WORKFLOW_TEMPORAL_ERROR, WORKFLOW_TEMPORAL_FAILED } from './constants';
 
-async function run() {
-  // Connect to the default Server location
-  const connection = await Connection.connect({ address: 'localhost:7233' });
-  // In production, pass options to configure TLS and other settings:
-  // {
-  //   address: 'foo.bar.tmprl.cloud',
-  //   tls: {}
-  // }
+const temporalConnectionUrl = process.env.TEMPORAL_CONNECTION_URL || 'localhost:7233';
 
-  const client = new Client({
-    connection,
-    // namespace: 'foo.bar', // connects to 'default' namespace if not specified
-  });
+class ClientConnector {
+  private client: WorkflowClient;
+  static instance: ClientConnector;
 
-  const handle = await client.workflow.start(example, {
-    taskQueue: 'hello-world',
-    // type inference works! args: [name: string]
-    args: ['Temporal'],
-    // in practice, use a meaningful business ID, like customerId or transactionId
-    workflowId: 'workflow-' + nanoid(),
-  });
-  console.log(`Started workflow ${handle.workflowId}`);
+  constructor() {
+    this.setConnection();
+  }
 
-  // optional: wait for client result
-  console.log(await handle.result()); // Hello, Temporal!
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = new ClientConnector();
+    }
+    return this.instance;
+  }
+
+  async setConnection() {
+    console.log('Setting connection', temporalConnectionUrl);
+    const connection = await Connection.connect({ address: temporalConnectionUrl });
+    this.client = new WorkflowClient({
+      connection,
+    });
+  }
+
+  public async start({ message, referenceId }: ClientPayload) {
+    // Start the signing workflow
+    if (!this.client) {
+      await this.setConnection();
+      await wait(5000);
+    }
+    console.log('Starting workflow');
+    const handle = await this.client.start(signMessageWorkflow, {
+      taskQueue: 'temporal',
+      args: [message, referenceId],
+      workflowId: referenceId,
+      workflowRunTimeout: 30000,
+    });
+  }
+
+  public async getWorklfowInfo(referenceId: string) {
+    // Get the workflow info
+    try {
+      //    const result = await handle.result();
+      const workflowInfo = this.client.getHandle(referenceId).describe();
+      return workflowInfo;
+    } catch (err) {
+      if (err instanceof WorkflowFailedError) {
+        LOGGER.error('[signMessage][error]', { metadata: { error: `${WORKFLOW_TEMPORAL_FAILED}: + referenceId` } });
+        throw new Error(`${WORKFLOW_TEMPORAL_FAILED}: + referenceId`);
+      } else {
+        LOGGER.error('[signMessage][error]', { metadata: { error: `${WORKFLOW_TEMPORAL_ERROR}: + referenceId` } });
+        throw new Error(`${WORKFLOW_TEMPORAL_ERROR}: + referenceId`);
+      }
+    }
+  }
+
+  public async getWorklfowMessageResult(referenceId: string) {
+    // Get the workflow info
+    try {
+      const workflowResult = this.client.getHandle(referenceId).result();
+      return workflowResult;
+    } catch (err) {
+      if (err instanceof WorkflowFailedError) {
+        LOGGER.error('[signMessage][error]', { metadata: { error: `${WORKFLOW_TEMPORAL_FAILED}: + referenceId` } });
+        throw new Error(`${WORKFLOW_TEMPORAL_FAILED}: + referenceId`);
+      } else {
+        LOGGER.error('[signMessage][error]', { metadata: { error: `${WORKFLOW_TEMPORAL_ERROR}: + referenceId` } });
+        throw new Error(`${WORKFLOW_TEMPORAL_ERROR}: + referenceId`);
+      }
+    }
+  }
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+export default ClientConnector;

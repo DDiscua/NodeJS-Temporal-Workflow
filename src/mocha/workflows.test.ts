@@ -1,11 +1,11 @@
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { before, describe, it } from 'mocha';
 import { Worker } from '@temporalio/worker';
-import { example } from '../workflows';
-import * as activities from '../activities';
+import { signMessageWorkflow } from '../workflows';
+import * as activities from '../activities/activities';
 import assert from 'assert';
 
-describe('Example workflow', () => {
+describe('signMessageWorkflow workflow', () => {
   let testEnv: TestWorkflowEnvironment;
 
   before(async () => {
@@ -28,8 +28,8 @@ describe('Example workflow', () => {
     });
 
     const result = await worker.runUntil(
-      client.workflow.execute(example, {
-        args: ['Temporal'],
+      client.workflow.execute(signMessageWorkflow, {
+        args: ['This is my message', ''],
         workflowId: 'test',
         taskQueue,
       })
