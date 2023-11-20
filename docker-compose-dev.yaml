@@ -40,7 +40,6 @@ services:
     ports:
       - '27017:27017'
     volumes:
-      - mongo:/data/db
       - ./mongo-init-dev.js:/docker-entrypoint-initdb.d/mongo-init-dev.js
 
   temporal-postgresql:
@@ -60,6 +59,3 @@ services:
       - 'ES_JAVA_OPTS=-Xms4g -Xmx4g'
     ports:
       - '9200:9200'
-
-volumes:
-  mongo:
